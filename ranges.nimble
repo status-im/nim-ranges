@@ -4,7 +4,7 @@ packageName   = "ranges"
 version       = "0.0.1"
 author        = "Status Research & Development GmbH"
 description   = "Exploration of various implementations of memory range types"
-license       = "Apache2"
+license       = "Apache License 2.0"
 skipDirs      = @["tests"]
 
 requires "nim >= 0.17.0"
