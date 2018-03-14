@@ -18,7 +18,15 @@ proc toMemRange*(x: string): MemRange =
   result.start = x.cstring.pointer
   result.size = x.len
 
-proc toMemRange*[T](x: openarray[T]): MemRange =
-  result.start = cast[pointer](x)
-  result.size = x.len * T.sizeof
+proc toMemRange*[T](x: openarray[T], fromIdx, toIdx: int): MemRange =
+  assert(fromIdx >= 0 and toIdx >= fromIdx and fromIdx < x.len and toIdx < x.len)
+  result.start = unsafeAddr x[fromIdx]
+  result.size = (toIdx - fromIdx + 1) * T.sizeof
 
+proc toMemRange*[T](x: openarray[T], fromIdx: int): MemRange {.inline.} =
+  toMemRange(x, fromIdx, x.high)
+
+proc toMemRange*[T](x: openarray[T]): MemRange {.inline.} =
+  toMemRange(x, 0, x.high)
+
+template toMemRange*(mr: MemRange): MemRange = mr
