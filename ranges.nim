@@ -1,6 +1,6 @@
 import
-  ranges/memranges
+  ranges/memranges,
+  ranges/typedranges
 
 export
-  memranges
-
+  memranges, typedranges
