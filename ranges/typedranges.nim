@@ -132,10 +132,12 @@ proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: openarray[T]) =
   else:
     raise newException(RangeError, "different lengths for slice assignment")
 
+template toOpenArray*[T](r: Range[T]): auto =
+  # TODO: Casting through an {.unchecked.} array would be more appropriate
+  # here, but currently this results in internal compiler error.
+  toOpenArray(cast[ptr array[10000000, T]](r.start)[], 0, r.high)
+
 proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: Range[T]) {.inline.} =
   r[s] = toOpenArray(v)
 
 proc baseAddr*[T](r: Range[T]): ptr T {.inline.} = r.start
-
-template toOpenArray*[T](r: Range[T]): auto =
-  toOpenArray(cast[ptr array[10000000, T]](r.start)[], 0, r.high)
