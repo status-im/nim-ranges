@@ -13,3 +13,9 @@ suite "Typed ranges":
     var s = newSeq[int]()
     for a in r: s.add(a)
     check s == @[1, 2, 3, 4, 5]
+
+  test "subrange":
+    var a = newRange[int](5)
+    let b = toRange(@[1, 2, 3])
+    a[1 .. 3] = b
+    check a.toSeq == @[0, 1, 2, 3, 0]
