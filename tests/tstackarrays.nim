@@ -1,6 +1,6 @@
 import
   unittest, math,
-  ../ranges/stackarray
+  ../ranges/stackarrays
 
 suite "Stack arrays":
   test "Basic operations work as expected":
@@ -8,7 +8,7 @@ suite "Stack arrays":
     check:
       type(arr[0]) is int
       arr.len == 10
-    
+
     # all items should be initially zero
     for i in arr: check i == 0
     for i in 0 .. arr.high: check arr[i] == 0
