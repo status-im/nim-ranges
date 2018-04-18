@@ -17,6 +17,25 @@
 ##    Please note that the stack size on certain platforms
 ##    may be very small (e.g. 8 to 32 kb on some Android versions)
 ##
+## Before using alloca-backed arrays, consider using:
+##
+## 1. A regular stack array with a reasonable size
+##
+## 2. A global {.threadvar.} sequence that can be resized when
+##    needed (only in non-reentrant procs)
+##
+## Other possible future directions:
+##
+## Instead of `alloca`, we may start using a shadow stack that will be much
+## harder to overflow. This will work by allocating a very large chunk of the
+## address space at program init (e.g. 1TB on a 64-bit system) and then by
+## gradually committing the individual pages to memory as they are requested.
+##
+## Such a scheme will even allow us to resize the stack array on demand
+## in situations where the final size is not known upfront. With a resizing
+## factor of 2, we'll never waste more than 50% of the memory which should
+## be reasonable for short-lived allocations.
+##
 
 type
   StackArray*[T] = ptr object
