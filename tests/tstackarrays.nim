@@ -1,6 +1,6 @@
 import
   unittest, math,
-  ../ranges/stackarrays
+  ../ranges/[stackarrays, ptr_arith]
 
 suite "Stack arrays":
   test "Basic operations work as expected":
@@ -20,6 +20,8 @@ suite "Stack arrays":
     check:
       sum(arr.toOpenArray) == 19
       arr[5] == 10
+      arr[^1] == 6
+      cast[ptr int](shift(addr arr[0], 5))[] == 10
 
   test "Allocating with a negative size throws a RangeError":
     expect RangeError:

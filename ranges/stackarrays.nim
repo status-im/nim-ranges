@@ -1,26 +1,60 @@
-proc alloca(n: int): pointer {.importc, header: "<alloca.h>".}
+## Stack-allocated arrays should be used with great care.
+##
+## They pose several major risks:
+##
+## 1. They should not be used inside resumable procs
+##    (i.e. closure iterators and async procs)
+##
+##    Future versions of the library may automatically
+##    detect such usages and flag them as errors
+##
+## 2. The user code should be certain that enough stack space
+##    is available for the allocation and there will be enough
+##    room for additional calls after the allocation.
+##
+##    Future versions of this library may provide checks
+##
+##    Please note that the stack size on certain platforms
+##    may be very small (e.g. 8 to 32 kb on some Android versions)
+##
 
 type
   StackArray*[T] = ptr object
-    bufferLen: int
+    bufferLen: int32
     buffer: UncheckedArray[T]
 
-template `[]`*(a: StackArray, i: int): auto =
-  if i < 0 or i >= a.len: raise newException(RangeError, "index out of range")
-  a.buffer[i]
+proc alloca(n: int): pointer {.importc, header: "<alloca.h>".}
 
-proc `[]=`*(a: StackArray, i: int, val: a.T) =
-  if i < 0 or i >= a.len: raise newException(RangeError, "index out of range")
-  a.buffer[i] = val
+proc raiseRangeError(s: string) =
+  raise newException(RangeError, s)
 
-proc len*(a: StackArray): int {.inline.} =
-  a.bufferLen
+proc raiseOutOfRange =
+  raiseRangeError "index out of range"
+
+template len*(a: StackArray): int =
+  int(a.bufferLen)
 
 template high*(a: StackArray): int =
-  a.bufferLen - 1
+  int(a.bufferLen) - 1
 
 template low*(a: StackArray): int =
   0
+
+template `[]`*(a: StackArray, i: int): auto =
+  if i < 0 or i >= a.len: raiseOutOfRange()
+  a.buffer[i]
+
+proc `[]=`*(a: StackArray, i: int, val: a.T) =
+  if i < 0 or i >= a.len: raiseOutOfRange()
+  a.buffer[i] = val
+
+template `[]`*(a: StackArray, i: BackwardsIndex): auto =
+  if int(i) < 1 or int(i) > a.len: raiseOutOfRange()
+  a.buffer[a.len - int(i)]
+
+proc `[]=`*(a: StackArray, i: BackwardsIndex, val: a.T) =
+  if int(i) < 1 or int(i) > a.len: raiseOutOfRange()
+  a.buffer[a.len - int(i)] = val
 
 iterator items*(a: StackArray): a.T =
   for i in 0 .. a.high:
@@ -39,14 +73,14 @@ iterator mpairs*(a: var StackArray): (int, var a.T) =
     yield (i, a.buffer[i])
 
 template allocStackArray*(T: typedesc, size: int): auto =
-  if size < 0: raise newException(RangeError, "allocation with a negative size")
+  if size < 0: raiseRangeError "allocation with a negative size"
   # XXX: is it possible to perform a stack size check before calling `alloca`?
   # On thread init, Nim may record the base address and the capacity of the stack,
   # so in theory we can verify that we still have enough room for the allocation.
   # Research this.
   var
     bufferSize = size * sizeof(T)
-    totalSize = sizeof(int) + bufferSize
+    totalSize = sizeof(int32) + bufferSize
     arr = cast[StackArray[T]](alloca(totalSize))
   zeroMem(addr arr.buffer[0], bufferSize)
   arr.bufferLen = size
@@ -54,4 +88,12 @@ template allocStackArray*(T: typedesc, size: int): auto =
 
 template toOpenArray*(a: StackArray): auto =
   toOpenArray(a.buffer, 0, a.high)
+
+template toOpenArray*(a: StackArray, first: int): auto =
+  if first < 0 or first >= a.len: raiseOutOfRange()
+  toOpenArray(a.buffer, first, a.high)
+
+template toOpenArray*(a: StackArray, first, last: int): auto =
+  if first < 0 or first >= last or last <= a.len: raiseOutOfRange()
+  toOpenArray(a.buffer, first, last)
 
