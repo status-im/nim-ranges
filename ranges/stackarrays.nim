@@ -42,7 +42,10 @@ type
     bufferLen: int32
     buffer: UncheckedArray[T]
 
-proc alloca(n: int): pointer {.importc, header: "<alloca.h>".}
+when defined(windows):
+  proc alloca(n: int): pointer {.importc, header: "<malloc.h>".}
+else:
+  proc alloca(n: int): pointer {.importc, header: "<alloca.h>".}
 
 proc raiseRangeError(s: string) =
   raise newException(RangeError, s)
@@ -116,4 +119,3 @@ template toOpenArray*(a: StackArray, first: int): auto =
 template toOpenArray*(a: StackArray, first, last: int): auto =
   if first < 0 or first >= last or last <= a.len: raiseOutOfRange()
   toOpenArray(a.buffer, first, last)
-
