@@ -92,17 +92,18 @@ iterator mpairs*(a: var StackArray): (int, var a.T) =
     yield (i, a.buffer[i])
 
 template allocStackArray*(T: typedesc, size: int): auto =
-  if size < 0: raiseRangeError "allocation with a negative size"
+  let sz = int(size) # Evaluate size only once
+  if sz < 0: raiseRangeError "allocation with a negative size"
   # XXX: is it possible to perform a stack size check before calling `alloca`?
   # On thread init, Nim may record the base address and the capacity of the stack,
   # so in theory we can verify that we still have enough room for the allocation.
   # Research this.
   var
-    bufferSize = size * sizeof(T)
+    bufferSize = sz * sizeof(T)
     totalSize = sizeof(int32) + bufferSize
     arr = cast[StackArray[T]](alloca(totalSize))
   zeroMem(addr arr.buffer[0], bufferSize)
-  arr.bufferLen = size
+  arr.bufferLen = int32(sz)
   arr
 
 template toOpenArray*(a: StackArray): auto =
