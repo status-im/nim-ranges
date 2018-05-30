@@ -4,7 +4,7 @@
 This library implements utility functions for working with parts and blobs of memory.
 
 # Installation
-nimble install https://github.com/status-im/nim-ranges/blob/master/ranges.nimble
+$ nimble install ranges
 
 
 # License
