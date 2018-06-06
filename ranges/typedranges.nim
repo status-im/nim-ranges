@@ -66,6 +66,10 @@ proc `[]`*[T](r: Range[T], idx: int): T {.inline.} =
   assert(idx < r.len)
   r.start.shift(idx)[]
 
+proc `==`*[T](a, b: Range[T]): bool =
+  if a.len != b.len: return false
+  equalMem(a.start, b.start, sizeof(T) * a.len)
+
 iterator ptrs[T](r: Range[T]): (int, ptr T) =
   var p = r.start
   var i = 0
