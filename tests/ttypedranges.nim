@@ -19,3 +19,10 @@ suite "Typed ranges":
     let b = toRange(@[1, 2, 3])
     a[1 .. 3] = b
     check a.toSeq == @[0, 1, 2, 3, 0]
+
+  test "equality operator":
+    var x = toRange(@[0, 1, 2, 3, 4, 5])
+    var y = x[1 .. ^2]
+    var z = toRange(@[1, 2, 3, 4])
+    check y == z
+    check x != z
