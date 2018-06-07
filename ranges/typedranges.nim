@@ -145,3 +145,19 @@ proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: Range[T]) {.inline.} =
   r[s] = toOpenArray(v)
 
 proc baseAddr*[T](r: Range[T]): ptr T {.inline.} = r.start
+
+template toRange*[T](a: Range[T]): Range[T] = a
+
+proc concat*[T](v: varargs[Range[T], toRange]): seq[T] =
+  var len = 0
+  for c in v: inc(len, c.len)
+  result = newSeq[T](len)
+  len = 0
+  for c in v:
+    copyMem(result[len].addr, c.start, sizeof(T) * c.len)
+    inc(len, c.len)
+
+proc `&`*[T](a, b: Range[T]): seq[T] =
+  result = newSeq[T](a.len + b.len)
+  copyMem(result[0].addr, a.start, sizeof(T) * a.len)
+  copyMem(result[a.len].addr, b.start, sizeof(T) * b.len)
