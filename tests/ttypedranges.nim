@@ -41,5 +41,20 @@ suite "Typed ranges":
     var z = concat(b, @[7,8,9])
     check z == f
 
-    
+  test "complex types concat operation":
+    type
+      Jaeger = object
+        name: string
+        weight: int
+
+    var A = Jaeger(name: "Gipsy Avenger", weight: 2004)
+    var B = Jaeger(name: "Striker Eureka", weight: 1850)
+    var C = Jaeger(name: "Saber Athena", weight: 1628)
+    var D = Jaeger(name: "Cherno Alpha", weight: 2412)
+
+    var k = toRange(@[A, B])
+    var m = toRange(@[C, D])
+    var n = concat(k, m)
+    check n == @[A, B, C ,D]
+    check n != @[A, B, C ,C]
 

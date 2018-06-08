@@ -1,4 +1,4 @@
-import ./ptr_arith
+import ./ptr_arith, typetraits
 
 const rangesGCHoldEnabled = not defined(rangesDisableGCHold)
 const unsafeAPIEnabled = defined(rangesEnableUnsafeAPI)
@@ -148,16 +148,28 @@ proc baseAddr*[T](r: Range[T]): ptr T {.inline.} = r.start
 
 template toRange*[T](a: Range[T]): Range[T] = a
 
+# this preferred syntax doesn't work
+# see https://github.com/nim-lang/Nim/issues/7995
+#template copyRange[T](dest: seq[T], destOffset: int, src: Range[T]) =
+#  when supportsCopyMem(T):
+
+template copyRange[T](E: typedesc, dest: seq[T], destOffset: int, src: Range[T]) =
+  when supportsCopyMem(E):
+    copyMem(dest[destOffset].unsafeAddr, src.start, sizeof(T) * src.len)
+  else:
+    for i in 0..<src.len:
+      dest[i + destOffset] = src[i]
+
 proc concat*[T](v: varargs[Range[T], toRange]): seq[T] =
   var len = 0
   for c in v: inc(len, c.len)
   result = newSeq[T](len)
   len = 0
   for c in v:
-    copyMem(result[len].addr, c.start, sizeof(T) * c.len)
+    copyRange(T, result, len, c)
     inc(len, c.len)
 
 proc `&`*[T](a, b: Range[T]): seq[T] =
   result = newSeq[T](a.len + b.len)
-  copyMem(result[0].addr, a.start, sizeof(T) * a.len)
-  copyMem(result[a.len].addr, b.start, sizeof(T) * b.len)
+  copyRange(T, result, 0, a)
+  copyRange(T, result, a.len, b)
