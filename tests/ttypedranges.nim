@@ -26,3 +26,40 @@ suite "Typed ranges":
     var z = toRange(@[1, 2, 3, 4])
     check y == z
     check x != z
+
+  test "concat operation":
+    var a = toRange(@[1,2,3])
+    var b = toRange(@[4,5,6])
+    var c = toRange(@[7,8,9])
+    var d = @[1,2,3,4,5,6,7,8,9]
+    var e = @[1,2,3,4,5,6]
+    var f = @[4,5,6,7,8,9]
+    var x = concat(a, b, c)
+    var y = a & b
+    check x == d
+    check y == e
+    var z = concat(b, @[7,8,9])
+    check z == f
+
+    let u = toRange(newSeq[int](0))
+    let v = toRange(@[3])
+    check concat(u, v) == @[3]
+    check (v & u) == @[3]
+
+  test "complex types concat operation":
+    type
+      Jaeger = object
+        name: string
+        weight: int
+
+    var A = Jaeger(name: "Gipsy Avenger", weight: 2004)
+    var B = Jaeger(name: "Striker Eureka", weight: 1850)
+    var C = Jaeger(name: "Saber Athena", weight: 1628)
+    var D = Jaeger(name: "Cherno Alpha", weight: 2412)
+
+    var k = toRange(@[A, B])
+    var m = toRange(@[C, D])
+    var n = concat(k, m)
+    check n == @[A, B, C ,D]
+    check n != @[A, B, C ,C]
+
