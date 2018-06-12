@@ -155,7 +155,8 @@ template toRange*[T](a: Range[T]): Range[T] = a
 
 template copyRange[T](E: typedesc, dest: seq[T], destOffset: int, src: Range[T]) =
   when supportsCopyMem(E):
-    copyMem(dest[destOffset].unsafeAddr, src.start, sizeof(T) * src.len)
+    if dest.len != 0 and src.len != 0:
+      copyMem(dest[destOffset].unsafeAddr, src.start, sizeof(T) * src.len)
   else:
     for i in 0..<src.len:
       dest[i + destOffset] = src[i]

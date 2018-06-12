@@ -41,6 +41,11 @@ suite "Typed ranges":
     var z = concat(b, @[7,8,9])
     check z == f
 
+    let u = toRange(newSeq[int](0))
+    let v = toRange(@[3])
+    check concat(u, v) == @[3]
+    check (v & u) == @[3]
+
   test "complex types concat operation":
     type
       Jaeger = object
