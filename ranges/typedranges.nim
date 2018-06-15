@@ -18,7 +18,7 @@ proc toImmutableRange[T](a: seq[T]): Range[T] =
   if a.len != 0:
     when rangesGCHoldEnabled:
       result.gcHold = a
-    result.start = unsafeAddr a[0]
+    result.start = addr result.gcHold[0]
     result.mLen = int32(a.len)
 
 when unsafeAPIEnabled:

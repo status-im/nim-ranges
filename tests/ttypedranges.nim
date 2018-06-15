@@ -63,3 +63,9 @@ suite "Typed ranges":
     check n == @[A, B, C ,D]
     check n != @[A, B, C ,C]
 
+  test "shallowness":
+    var s = @[1, 2, 3]
+    var r = s.toRange()
+    var r2 = r
+    check(r.baseAddr == r2.baseAddr)
+    # check(r.baseAddr == addr s[0]) # XXX: Uncomment once nim bug #8044 is fixed
