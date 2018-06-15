@@ -67,5 +67,7 @@ suite "Typed ranges":
     var s = @[1, 2, 3]
     var r = s.toRange()
     var r2 = r
-    check(r.baseAddr == r2.baseAddr)
-    # check(r.baseAddr == addr s[0]) # XXX: Uncomment once nim bug #8044 is fixed
+    s[0] = 5
+    # check(r[0] == 5) # XXX: Uncomment once nim bug #8044 is fixed
+    r[1] = 10
+    check(r2[1] == 10)
