@@ -1,5 +1,5 @@
 import
-  unittest,
+  unittest, sets,
   ../ranges/typedranges
 
 suite "Typed ranges":
@@ -71,3 +71,11 @@ suite "Typed ranges":
     # check(r[0] == 5) # XXX: Uncomment once nim bug #8044 is fixed
     r[1] = 10
     check(r2[1] == 10)
+
+  test "hash function":
+    var a = toRange(@[1,2,3])
+    var b = toRange(@[4,5,6])
+    var c = toRange(@[7,8,9])
+    var x = toSet([a, b, c, a, b])
+    check x.len == 3
+    check a in x

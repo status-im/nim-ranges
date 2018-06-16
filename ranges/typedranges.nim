@@ -1,4 +1,4 @@
-import ./ptr_arith, typetraits
+import ./ptr_arith, typetraits, hashes
 
 const rangesGCHoldEnabled = not defined(rangesDisableGCHold)
 const unsafeAPIEnabled = defined(rangesEnableUnsafeAPI)
@@ -50,6 +50,14 @@ proc toRange*[T](a: seq[T]): Range[T] {.inline.} = toImmutableRange(a)
 
 converter toImmutableRange*[T](a: MutRange[T]): Range[T] {.inline.} = Range[T](a)
 
+proc hash*(x: Range): Hash =
+  var h: Hash = 0
+  when rangesGCHoldEnabled:
+    h = h !& hash(x.gcHold)
+  h = h !& hash(x.start)
+  h = h !& hash(x.mLen)
+  result = !$h
+  
 proc len*(r: Range): int {.inline.} = int(r.mLen)
 
 proc high*(r: Range): int {.inline.} = r.len - 1
