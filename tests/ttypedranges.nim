@@ -79,3 +79,8 @@ suite "Typed ranges":
     var x = toSet([a, b, c, a, b])
     check x.len == 3
     check a in x
+
+    var z = toRange(@[7,8,9])
+    var y = toSet([z, b, c])
+    check z in y
+    check z in x

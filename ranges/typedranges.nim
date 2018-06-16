@@ -54,10 +54,9 @@ proc hash*(x: Range): Hash =
   var h: Hash = 0
   when rangesGCHoldEnabled:
     h = h !& hash(x.gcHold)
-  h = h !& hash(x.start)
   h = h !& hash(x.mLen)
   result = !$h
-  
+
 proc len*(r: Range): int {.inline.} = int(r.mLen)
 
 proc high*(r: Range): int {.inline.} = r.len - 1
