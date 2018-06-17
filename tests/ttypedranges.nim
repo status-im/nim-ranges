@@ -76,6 +76,8 @@ suite "Typed ranges":
     var a = toRange(@[1,2,3])
     var b = toRange(@[4,5,6])
     var c = toRange(@[7,8,9])
+    var d = toRange(@[1,2,3,4,5,6,7,8,9])
+    var e = toRange(@[1,2,3,4,5,6,7,8,9])
     var x = toSet([a, b, c, a, b])
     check x.len == 3
     check a in x
@@ -84,3 +86,13 @@ suite "Typed ranges":
     var y = toSet([z, b, c])
     check z in y
     check z in x
+
+    var u = d[0..2]
+    var v = d[3..5]
+    var uu = e[0..2]
+    var vv = e[3..5]
+    check hash(u) != hash(v)
+    check hash(uu) == hash(u)
+    check hash(v) == hash(vv)
+    check hash(uu) != hash(vv)
+     
