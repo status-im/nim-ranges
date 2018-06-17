@@ -50,13 +50,6 @@ proc toRange*[T](a: seq[T]): Range[T] {.inline.} = toImmutableRange(a)
 
 converter toImmutableRange*[T](a: MutRange[T]): Range[T] {.inline.} = Range[T](a)
 
-proc hash*(x: Range): Hash =
-  var h: Hash = 0
-  when rangesGCHoldEnabled:
-    h = h !& hash(x.gcHold)
-  h = h !& hash(x.mLen)
-  result = !$h
-
 proc len*(r: Range): int {.inline.} = int(r.mLen)
 
 proc high*(r: Range): int {.inline.} = r.len - 1
@@ -181,3 +174,6 @@ proc `&`*[T](a, b: Range[T]): seq[T] =
   result = newSeq[T](a.len + b.len)
   copyRange(T, result, 0, a)
   copyRange(T, result, a.len, b)
+
+proc hash*(x: Range): Hash =
+  result = hash(toOpenArray(x))
