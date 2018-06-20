@@ -14,6 +14,9 @@ type
   # A view into mutable array
   MutRange*[T] = distinct Range[T]
 
+  ByteRange* = Range[byte]
+  MutByteRange* = MutRange[byte]
+
 proc toImmutableRange[T](a: seq[T]): Range[T] =
   if a.len != 0:
     when rangesGCHoldEnabled:

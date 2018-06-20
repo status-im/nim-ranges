@@ -1,2 +1,2 @@
 import
-  ttypedranges, tstackarrays
+  ttypedranges, tstackarrays, tbitranges
