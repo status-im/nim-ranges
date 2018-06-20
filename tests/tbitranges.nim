@@ -68,3 +68,16 @@ suite "bir ranges":
       for idx, bit in x:
         y[idx] = bit
       check x == y
+
+  test "constructor with start":
+    var a = @[byte 0b10101010, 0b11110000, 0b00001111, 0b01010101]
+    var b = a.bits(1, 8)
+    check b.len == 8
+    check b[0] == false
+    check $b == "01010101"
+    b[0] = true
+    check $b == "11010101"
+    check b[0] == true
+    b.pushFront(false)
+    check b[0] == false
+    check $b == "011010101"

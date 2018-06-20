@@ -174,6 +174,12 @@ proc setAbsoluteBit(x: BitRange, absIdx: int, val: bool) {.inline.} =
   if val:
     raiseBitBE x.data[byteToWrite], bitToWrite
 
+proc pushFront*(x: var BitRange, val: bool) =
+  assert x.start > 0
+  dec x.start
+  x[0] = val
+  inc x.mLen
+
 template neededBytes(nBits: int): int =
   (nBits shr 3) + ord((nBits and 0b111) != 0)
 
