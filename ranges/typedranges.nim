@@ -1,7 +1,7 @@
 import ./ptr_arith, typetraits, hashes
 
 const rangesGCHoldEnabled = not defined(rangesDisableGCHold)
-const unsafeAPIEnabled = defined(rangesEnableUnsafeAPI)
+const unsafeAPIEnabled* = defined(rangesEnableUnsafeAPI)
 
 type
   # A view into immutable array
@@ -45,6 +45,12 @@ when unsafeAPIEnabled:
     data.toRange()
 
   proc toRange*[T](a: openarray[T]): Range[T] {.inline.} = toImmutableRange(a)
+
+  proc unsafeRangeConstruction*[T](a: var openarray[T]): MutRange[T] {.inline.} =
+    MutRange[T](toImmutableRange(a))
+
+  proc unsafeRangeConstruction*[T](a: openarray[T]): Range[T] {.inline.} =
+    toImmutableRange(a)
 
 proc newRange*[T](sz: int): MutRange[T] {.inline.} =
   MutRange[T](toImmutableRange(newSeq[T](sz)))
