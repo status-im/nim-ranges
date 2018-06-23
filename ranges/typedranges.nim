@@ -113,7 +113,12 @@ proc `$`*(r: Range): string =
   result &= "]"
 
 proc sliceNormalized[T](r: Range[T], ibegin, iend: int): Range[T] =
-  assert(ibegin >= 0 and ibegin < r.len and iend >= ibegin and iend < r.len)
+  assert ibegin >= 0 and
+         ibegin < r.len and
+         iend < r.len and
+         iend + 1 >= ibegin # the +1 here allows the result to be
+                            # an empty range
+
   when rangesGCHoldEnabled:
     result.gcHold = r.gcHold
   result.start = r.start.shift(ibegin)
