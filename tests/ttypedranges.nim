@@ -19,6 +19,9 @@ suite "Typed ranges":
     let b = toRange(@[1, 2, 3])
     a[1 .. 3] = b
     check a.toSeq == @[0, 1, 2, 3, 0]
+    check:
+      a[2 .. 2].len == 1
+      a[1 ..< 1].len == 0
 
   test "equality operator":
     var x = toRange(@[0, 1, 2, 3, 4, 5])
@@ -95,4 +98,4 @@ suite "Typed ranges":
     check hash(uu) == hash(u)
     check hash(v) == hash(vv)
     check hash(uu) != hash(vv)
-     
+

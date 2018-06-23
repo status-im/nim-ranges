@@ -137,8 +137,9 @@ proc `[]`*(x: BitRange, idx: int): bool {.inline.} =
 proc sliceNormalized(x: BitRange, ibegin, iend: int): BitRange =
   assert ibegin >= 0 and
          ibegin < x.len and
-         iend >= ibegin and
-         iend < x.len
+         iend < x.len and
+         iend + 1 >= ibegin # the +1 here allows the result to be
+                            # an empty range
 
   result.data  = x.data
   result.start = x.start + ibegin
