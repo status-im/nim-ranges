@@ -1,6 +1,3 @@
-import
-  ranges/memranges,
-  ranges/typedranges
+import ranges/[memranges, typedranges, stackarrays]
 
-export
-  memranges, typedranges
+export memranges, typedranges, stackarrays
