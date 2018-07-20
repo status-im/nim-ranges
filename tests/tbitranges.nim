@@ -7,7 +7,7 @@ proc randomBytes(n: int): seq[byte] =
   for i in 0 ..< result.len:
     result[i] = byte(rand(256))
 
-suite "bir ranges":
+suite "bit ranges":
 
   test "basic":
     var a = @[byte 0b10101010, 0b11110000, 0b00001111, 0b01010101]
