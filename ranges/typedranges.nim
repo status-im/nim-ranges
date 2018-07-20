@@ -153,7 +153,8 @@ proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: openarray[T]) =
 template toOpenArray*[T](r: Range[T]): auto =
   # TODO: Casting through an {.unchecked.} array would be more appropriate
   # here, but currently this results in internal compiler error.
-  toOpenArray(cast[ptr array[10000000, T]](r.start)[], 0, r.high)
+  # NOTE: `0` in `array[0, T]` is irrelevant
+  toOpenArray(cast[ptr array[0, T]](r.start)[], 0, r.high)
 
 proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: Range[T]) {.inline.} =
   r[s] = toOpenArray(v)
