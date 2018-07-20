@@ -99,3 +99,6 @@ suite "Typed ranges":
     check hash(v) == hash(vv)
     check hash(uu) != hash(vv)
 
+  test "toOpenArray":
+    var a = toRange(@[1,2,3])
+    check $a.toOpenArray == "[1, 2, 3]"
