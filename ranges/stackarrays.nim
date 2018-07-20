@@ -38,9 +38,9 @@
 ##
 
 type
-  StackArray*[T] = ptr object
+  StackArray*[T] = object
     bufferLen: int32
-    buffer: UncheckedArray[T]
+    buffer: ptr UncheckedArray[T]
 
 when defined(windows):
   proc alloca(n: int): pointer {.importc, header: "<malloc.h>".}
@@ -66,7 +66,7 @@ template `[]`*(a: StackArray, i: int): auto =
   if i < 0 or i >= a.len: raiseOutOfRange()
   a.buffer[i]
 
-proc `[]=`*(a: StackArray, i: int, val: a.T) =
+proc `[]=`*(a: StackArray, i: int, val: a.T) {.inline.} =
   if i < 0 or i >= a.len: raiseOutOfRange()
   a.buffer[i] = val
 
@@ -94,28 +94,34 @@ iterator mpairs*(a: var StackArray): (int, var a.T) =
   for i in 0 .. a.high:
     yield (i, a.buffer[i])
 
-template allocStackArray*(T: typedesc, size: int): auto =
+template allocaAux(sz: int, init: static[bool]): pointer =
+  let s = sz
+  let b = alloca(s)
+  when init: zeroMem(b, s)
+  b
+
+template allocStackArrayAux(T: typedesc, size: int, init: static[bool]): StackArray[T] =
   let sz = int(size) # Evaluate size only once
   if sz < 0: raiseRangeError "allocation with a negative size"
   # XXX: is it possible to perform a stack size check before calling `alloca`?
   # On thread init, Nim may record the base address and the capacity of the stack,
   # so in theory we can verify that we still have enough room for the allocation.
   # Research this.
-  var
-    bufferSize = sz * sizeof(T)
-    totalSize = sizeof(int32) + bufferSize
-    arr = cast[StackArray[T]](alloca(totalSize))
-  zeroMem(addr arr.buffer[0], bufferSize)
-  arr.bufferLen = int32(sz)
-  arr
+  StackArray[T](bufferLen: int32(sz), buffer: cast[ptr UncheckedArray[T]](allocaAux(sz * sizeof(T), init)))
+
+template allocStackArray*(T: typedesc, size: int): StackArray[T] =
+  allocStackArrayAux(T, size, true)
+
+template allocStackArrayNoInit*(T: typedesc, size: int): StackArray[T] =
+  allocStackArrayAux(T, size, false)
 
 template toOpenArray*(a: StackArray): auto =
-  toOpenArray(a.buffer, 0, a.high)
+  toOpenArray(a.buffer[], 0, a.high)
 
 template toOpenArray*(a: StackArray, first: int): auto =
   if first < 0 or first >= a.len: raiseOutOfRange()
-  toOpenArray(a.buffer, first, a.high)
+  toOpenArray(a.buffer[], first, a.high)
 
 template toOpenArray*(a: StackArray, first, last: int): auto =
   if first < 0 or first >= last or last <= a.len: raiseOutOfRange()
-  toOpenArray(a.buffer, first, last)
+  toOpenArray(a.buffer[], first, last)
