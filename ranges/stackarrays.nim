@@ -94,7 +94,9 @@ iterator mpairs*(a: var StackArray): (int, var a.T) =
   for i in 0 .. a.high:
     yield (i, a.buffer[i])
 
-template allocStackArray*(T: typedesc, size: int): auto =
+template allocStackArray*(T: typedesc, size: int, initialized = true): auto =
+  ## type-safe version of C's alloca intrinsic; ``initialized`` = false skips
+  ## initialization, resulting in O(1) stack allocation.
   let sz = int(size) # Evaluate size only once
   if sz < 0: raiseRangeError "allocation with a negative size"
   # XXX: is it possible to perform a stack size check before calling `alloca`?
@@ -105,7 +107,8 @@ template allocStackArray*(T: typedesc, size: int): auto =
     bufferSize = sz * sizeof(T)
     totalSize = sizeof(int32) + bufferSize
     arr = cast[StackArray[T]](alloca(totalSize))
-  zeroMem(addr arr.buffer[0], bufferSize)
+  if initialized:
+    zeroMem(addr arr.buffer[0], bufferSize)
   arr.bufferLen = int32(sz)
   arr
 
