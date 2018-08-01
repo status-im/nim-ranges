@@ -34,3 +34,14 @@ suite "Stack arrays":
     expect RangeError:
       arr[3] = "another test"
 
+  test "proof of stack allocation":
+    proc fun() =
+      # NOTE: has to be inside a proc otherwise x1 not allocated on stack.
+      var x1 = 0
+      var arr = allocStackArray(int, 3)
+
+      check:
+        # stack can go either up or down, hence `abs`.
+        # 1024 should be large enough (was 312 on OSX).
+        abs(cast[int](x1.addr) - cast[int](addr(arr[0]))) < 1024
+    fun()
