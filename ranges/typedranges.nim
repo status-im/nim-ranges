@@ -211,24 +211,23 @@ template advanceImpl(a, b: untyped): bool =
 
 proc tryAdvance*[T](x: var Range[T], idx: int): bool =
   ## Move internal start offset of range ``x`` by ``idx`` elements forward.
-  ## 
+  ##
   ## Returns ``true`` if operation got completed successfully, or
-  ## ``false`` if you are trying to overrun range ``x``. 
+  ## ``false`` if you are trying to overrun range ``x``.
   result = x.advanceImpl(idx)
 
-proc tryAdvance*[T](x: var MutRange[T], idx: int): bool =
+proc tryAdvance*[T](x: var MutRange[T], idx: int): bool {.inline.} =
   ## Move internal start offset of range ``x`` by ``idx`` elements forward.
-  ## 
+  ##
   ## Returns ``true`` if operation got completed successfully, or
-  ## ``false`` if you are trying to overrun range ``x``. 
-  result = x.advanceImpl(idx)
+  ## ``false`` if you are trying to overrun range ``x``.
+  result = tryAdvance(Range[T](x), idx)
 
 proc advance*[T](x: var Range[T], idx: int) =
   ## Move internal start offset of range ``x`` by ``idx`` elements forward.
   let res = x.advanceImpl(idx)
   if not res: raise newException(IndexError, "Advance Error")
 
-proc advance*[T](x: var MutRange[T], idx: int) =
+proc advance*[T](x: var MutRange[T], idx: int) {.inline.} =
   ## Move internal start offset of range ``x`` by ``idx`` elements forward.
-  let res = x.advanceImpl(idx)
-  if not res: raise newException(IndexError, "Advance Error")
+  advance(Range[T](x), idx)
