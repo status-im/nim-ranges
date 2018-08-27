@@ -119,8 +119,10 @@ suite "Typed ranges":
       $b.toOpenArray == "[2, 3]"
       b.tryAdvance(1) == true
       $b.toOpenArray == "[3]"
+      b.tryAdvance(1) == true
+      $b.toOpenArray == "[]"
       b.tryAdvance(1) == false
-      $b.toOpenArray == "[3]"
+      $b.toOpenArray == "[]"
 
   test "advance":
     template aecheck(a, b): int =
@@ -147,5 +149,7 @@ suite "Typed ranges":
       $b.toOpenArray == "[2, 3]"
       b.aecheck(1) == 1
       $b.toOpenArray == "[3]"
+      b.aecheck(1) == 1
+      $b.toOpenArray == "[]"
       b.aecheck(1) == 2
-      $b.toOpenArray == "[3]"
+      $b.toOpenArray == "[]"

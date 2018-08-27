@@ -201,7 +201,7 @@ template advanceImpl(a, b: untyped): bool =
     if isNil(a.start) or a.mLen <= 0:
       res = false
     else:
-      if a.mLen - b <= 0:
+      if a.mLen - b < 0:
         res = false
       else:
         a.start = a.start.shift(b)
