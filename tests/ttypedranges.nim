@@ -102,3 +102,21 @@ suite "Typed ranges":
   test "toOpenArray":
     var a = toRange(@[1,2,3])
     check $a.toOpenArray == "[1, 2, 3]"
+
+  test "seek":
+    var a: Range[int]
+    check:
+      a.seek(1) == EmptyRange
+      a.seek(-1) == EmptyRange
+    var b = toRange(@[1, 2, 3])
+    check:
+      b.seek(-1) == NegativeOffset
+      $b.toOpenArray == "[1, 2, 3]"
+      b.seek(0) == Success
+      $b.toOpenArray == "[1, 2, 3]"
+      b.seek(1) == Success
+      $b.toOpenArray == "[2, 3]"
+      b.seek(1) == Success
+      $b.toOpenArray == "[3]"
+      b.seek(1) == OverrunRange
+      $b.toOpenArray == "[3]"

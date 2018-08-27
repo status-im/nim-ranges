@@ -17,6 +17,9 @@ type
   ByteRange* = Range[byte]
   MutByteRange* = MutRange[byte]
 
+  RangeStatus* = enum
+    None, Success, EmptyRange, OverrunRange, NegativeOffset
+
 proc toImmutableRange[T](a: seq[T]): Range[T] =
   if a.len != 0:
     when rangesGCHoldEnabled:
@@ -192,3 +195,17 @@ proc `&`*[T](a, b: Range[T]): seq[T] =
 
 proc hash*(x: Range): Hash =
   result = hash(toOpenArray(x))
+
+proc seek*[T](x: var Range[T], idx: int32): RangeStatus =
+  ## Move internal start offset of range ``x`` by ``idx`` elements forward.
+  if isNil(x.start) or x.mLen <= 0:
+    return EmptyRange
+  if idx < 0:
+    return NegativeOffset
+  elif idx == 0:
+    return Success
+  if x.mLen - idx <= 0:
+    return OverrunRange
+  x.start = x.start.shift(idx)
+  x.mLen -= idx
+  result = Success
