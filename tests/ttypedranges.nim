@@ -71,7 +71,7 @@ suite "Typed ranges":
     var r = s.toRange()
     var r2 = r
     s[0] = 5
-    # check(r[0] == 5) # XXX: Uncomment once nim bug #8044 is fixed
+    check(r[0] == 5)
     r[1] = 10
     check(r2[1] == 10)
 
