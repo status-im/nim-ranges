@@ -9,7 +9,7 @@ type
     when rangesGCHoldEnabled:
       gcHold: seq[T]
     start: ptr T
-    mLen: int32
+    mLen: int
 
   # A view into mutable array
   MutRange*[T] = distinct Range[T]
@@ -17,21 +17,18 @@ type
   ByteRange* = Range[byte]
   MutByteRange* = MutRange[byte]
 
-  RangeStatus* = enum
-    None, Success, EmptyRange, OverrunRange, NegativeOffset
-
 proc toImmutableRange[T](a: seq[T]): Range[T] =
   if a.len != 0:
     when rangesGCHoldEnabled:
       result.gcHold = a
     result.start = addr result.gcHold[0]
-    result.mLen = int32(a.len)
+    result.mLen = a.len
 
 when unsafeAPIEnabled:
   proc toImmutableRangeNoGCHold[T](a: openarray[T]): Range[T] =
     if a.len != 0:
       result.start = unsafeAddr a[0]
-      result.mLen = int32(a.len)
+      result.mLen = a.len
 
   proc toImmutableRange[T](a: openarray[T]): Range[T] {.inline.} =
     toImmutableRangeNoGCHold(a)
@@ -125,7 +122,7 @@ proc sliceNormalized[T](r: Range[T], ibegin, iend: int): Range[T] =
   when rangesGCHoldEnabled:
     result.gcHold = r.gcHold
   result.start = r.start.shift(ibegin)
-  result.mLen = int32(iend - ibegin + 1)
+  result.mLen = iend - ibegin + 1
 
 proc slice*[T](r: Range[T], ibegin = 0, iend = -1): Range[T] =
   let e = if iend < 0: r.len + iend
@@ -196,23 +193,42 @@ proc `&`*[T](a, b: Range[T]): seq[T] =
 proc hash*(x: Range): Hash =
   result = hash(toOpenArray(x))
 
-template seekImpl(a, b: untyped) =
-  if isNil(a.start) or a.mLen <= 0:
-    return EmptyRange
-  if b < 0:
-    return NegativeOffset
-  elif b == 0:
-    return Success
-  if a.mLen - b <= 0:
-    return OverrunRange
-  a.start = a.start.shift(b)
-  a.mLen -= b
-  result = Success
+template advanceImpl(a, b: untyped): bool =
+  var res = false
+  if b == 0:
+    res = true
+  elif b > 0:
+    if isNil(a.start) or a.mLen <= 0:
+      res = false
+    else:
+      if a.mLen - b <= 0:
+        res = false
+      else:
+        a.start = a.start.shift(b)
+        a.mLen -= b
+        res = true
+  res
 
-proc seek*[T](x: var Range[T], idx: int32): RangeStatus =
+proc tryAdvance*[T](x: var Range[T], idx: int): bool =
   ## Move internal start offset of range ``x`` by ``idx`` elements forward.
-  x.seekImpl(idx)
+  ## 
+  ## Returns ``true`` if operation got completed successfully, or
+  ## ``false`` if you are trying to overrun range ``x``. 
+  result = x.advanceImpl(idx)
 
-proc seek*[T](x: var MutRange[T], idx: int32): RangeStatus =
+proc tryAdvance*[T](x: var MutRange[T], idx: int): bool =
   ## Move internal start offset of range ``x`` by ``idx`` elements forward.
-  x.seekImpl(idx)
+  ## 
+  ## Returns ``true`` if operation got completed successfully, or
+  ## ``false`` if you are trying to overrun range ``x``. 
+  result = x.advanceImpl(idx)
+
+proc advance*[T](x: var Range[T], idx: int) =
+  ## Move internal start offset of range ``x`` by ``idx`` elements forward.
+  let res = x.advanceImpl(idx)
+  if not res: raise newException(IndexError, "Advance Error")
+
+proc advance*[T](x: var MutRange[T], idx: int) =
+  ## Move internal start offset of range ``x`` by ``idx`` elements forward.
+  let res = x.advanceImpl(idx)
+  if not res: raise newException(IndexError, "Advance Error")

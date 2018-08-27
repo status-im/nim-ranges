@@ -103,20 +103,49 @@ suite "Typed ranges":
     var a = toRange(@[1,2,3])
     check $a.toOpenArray == "[1, 2, 3]"
 
-  test "seek":
+  test "tryAdvance":
     var a: Range[int]
     check:
-      a.seek(1) == EmptyRange
-      a.seek(-1) == EmptyRange
+      a.tryAdvance(1) == false
+      a.tryAdvance(-1) == false
+      a.tryAdvance(0) == true
     var b = toRange(@[1, 2, 3])
     check:
-      b.seek(-1) == NegativeOffset
+      b.tryAdvance(-1) == false
       $b.toOpenArray == "[1, 2, 3]"
-      b.seek(0) == Success
+      b.tryAdvance(0) == true
       $b.toOpenArray == "[1, 2, 3]"
-      b.seek(1) == Success
+      b.tryAdvance(1) == true
       $b.toOpenArray == "[2, 3]"
-      b.seek(1) == Success
+      b.tryAdvance(1) == true
       $b.toOpenArray == "[3]"
-      b.seek(1) == OverrunRange
+      b.tryAdvance(1) == false
+      $b.toOpenArray == "[3]"
+
+  test "advance":
+    template aecheck(a, b): int =
+      var res = 0
+      try:
+        a.advance(b)
+        res = 1
+      except IndexError:
+        res = 2
+      res
+
+    var a: Range[int]
+    check:
+      a.aecheck(1) == 2
+      a.aecheck(-1) == 2
+      a.aecheck(0) == 1
+    var b = toRange(@[1, 2, 3])
+    check:
+      b.aecheck(-1) == 2
+      $b.toOpenArray == "[1, 2, 3]"
+      b.aecheck(0) == 1
+      $b.toOpenArray == "[1, 2, 3]"
+      b.aecheck(1) == 1
+      $b.toOpenArray == "[2, 3]"
+      b.aecheck(1) == 1
+      $b.toOpenArray == "[3]"
+      b.aecheck(1) == 2
       $b.toOpenArray == "[3]"
