@@ -196,16 +196,23 @@ proc `&`*[T](a, b: Range[T]): seq[T] =
 proc hash*(x: Range): Hash =
   result = hash(toOpenArray(x))
 
+template seekImpl(a, b: untyped) =
+  if isNil(a.start) or a.mLen <= 0:
+    return EmptyRange
+  if b < 0:
+    return NegativeOffset
+  elif b == 0:
+    return Success
+  if a.mLen - b <= 0:
+    return OverrunRange
+  a.start = a.start.shift(b)
+  a.mLen -= b
+  result = Success
+
 proc seek*[T](x: var Range[T], idx: int32): RangeStatus =
   ## Move internal start offset of range ``x`` by ``idx`` elements forward.
-  if isNil(x.start) or x.mLen <= 0:
-    return EmptyRange
-  if idx < 0:
-    return NegativeOffset
-  elif idx == 0:
-    return Success
-  if x.mLen - idx <= 0:
-    return OverrunRange
-  x.start = x.start.shift(idx)
-  x.mLen -= idx
-  result = Success
+  x.seekImpl(idx)
+
+proc seek*[T](x: var MutRange[T], idx: int32): RangeStatus =
+  ## Move internal start offset of range ``x`` by ``idx`` elements forward.
+  x.seekImpl(idx)
