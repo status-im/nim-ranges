@@ -17,10 +17,19 @@ type
   ByteRange* = Range[byte]
   MutByteRange* = MutRange[byte]
 
+proc isLiteral[T](s: seq[T]): bool {.inline.} =
+  type
+    SeqHeader = object
+      length, reserved: int
+  (cast[ptr SeqHeader](s).reserved and (1 shl (sizeof(int) * 8 - 2))) != 0
+
 proc toImmutableRange[T](a: seq[T]): Range[T] =
   if a.len != 0:
     when rangesGCHoldEnabled:
-      result.gcHold = a
+      if not isLiteral(a):
+        shallowCopy(result.gcHold, a)
+      else:
+        result.gcHold = a
     result.start = addr result.gcHold[0]
     result.mLen = a.len
 
