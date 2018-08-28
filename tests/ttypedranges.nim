@@ -103,7 +103,7 @@ suite "Typed ranges":
     var a = toRange(@[1,2,3])
     check $a.toOpenArray == "[1, 2, 3]"
 
-  test "tryAdvance":
+  test "tryAdvance(Range)":
     var a: Range[int]
     check:
       a.tryAdvance(1) == false
@@ -124,7 +124,7 @@ suite "Typed ranges":
       b.tryAdvance(1) == false
       $b.toOpenArray == "[]"
 
-  test "advance":
+  test "advance(Range)":
     template aecheck(a, b): int =
       var res = 0
       try:
@@ -140,6 +140,59 @@ suite "Typed ranges":
       a.aecheck(-1) == 2
       a.aecheck(0) == 1
     var b = toRange(@[1, 2, 3])
+    check:
+      b.aecheck(-1) == 2
+      $b.toOpenArray == "[1, 2, 3]"
+      b.aecheck(0) == 1
+      $b.toOpenArray == "[1, 2, 3]"
+      b.aecheck(1) == 1
+      $b.toOpenArray == "[2, 3]"
+      b.aecheck(1) == 1
+      $b.toOpenArray == "[3]"
+      b.aecheck(1) == 1
+      $b.toOpenArray == "[]"
+      b.aecheck(1) == 2
+      $b.toOpenArray == "[]"
+
+  test "tryAdvance(MutRange)":
+    var a: MutRange[int]
+    check:
+      a.tryAdvance(1) == false
+      a.tryAdvance(-1) == false
+      a.tryAdvance(0) == true
+    var buf = @[1, 2, 3]
+    var b = toRange(buf)
+    check:
+      b.tryAdvance(-1) == false
+      $b.toOpenArray == "[1, 2, 3]"
+      b.tryAdvance(0) == true
+      $b.toOpenArray == "[1, 2, 3]"
+      b.tryAdvance(1) == true
+      $b.toOpenArray == "[2, 3]"
+      b.tryAdvance(1) == true
+      $b.toOpenArray == "[3]"
+      b.tryAdvance(1) == true
+      $b.toOpenArray == "[]"
+      b.tryAdvance(1) == false
+      $b.toOpenArray == "[]"
+
+  test "advance(MutRange)":
+    template aecheck(a, b): int =
+      var res = 0
+      try:
+        a.advance(b)
+        res = 1
+      except IndexError:
+        res = 2
+      res
+
+    var a: MutRange[int]
+    check:
+      a.aecheck(1) == 2
+      a.aecheck(-1) == 2
+      a.aecheck(0) == 1
+    var buf = @[1, 2, 3]
+    var b = toRange(buf)
     check:
       b.aecheck(-1) == 2
       $b.toOpenArray == "[1, 2, 3]"
