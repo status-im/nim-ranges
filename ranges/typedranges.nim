@@ -12,7 +12,7 @@ type
     mLen: int
 
   # A view into mutable array
-  MutRange*[T] = distinct Range[T]
+  MutRange* {.shallow.} [T] = distinct Range[T]
 
   ByteRange* = Range[byte]
   MutByteRange* = MutRange[byte]
@@ -129,7 +129,7 @@ proc sliceNormalized[T](r: Range[T], ibegin, iend: int): Range[T] =
                             # an empty range
 
   when rangesGCHoldEnabled:
-    result.gcHold = r.gcHold
+    shallowCopy(result.gcHold, r.gcHold)
   result.start = r.start.shift(ibegin)
   result.mLen = iend - ibegin + 1
 
@@ -169,7 +169,12 @@ proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: Range[T]) {.inline.} =
   r[s] = toOpenArray(v)
 
 proc baseAddr*[T](r: Range[T]): ptr T {.inline.} = r.start
-
+proc gcHolder*[T](r: Range[T]): ptr T {.inline.} = 
+  ## This procedure is used only for shallow test, do not use it
+  ## in production.
+  when rangesGCHoldEnabled:
+    if r.len > 0:
+      result = unsafeAddr r.gcHold[0]
 template toRange*[T](a: Range[T]): Range[T] = a
 
 # this preferred syntax doesn't work

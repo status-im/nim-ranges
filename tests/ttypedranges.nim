@@ -72,8 +72,11 @@ suite "Typed ranges":
     var r2 = r
     s[0] = 5
     check(r[0] == 5)
-    r[1] = 10
+    s[1] = 10
     check(r2[1] == 10)
+    var r3 = r[2..2]
+    s[2] = 15
+    check(r3[0] == 15)
 
   test "hash function":
     var a = toRange(@[1,2,3])
@@ -102,6 +105,34 @@ suite "Typed ranges":
   test "toOpenArray":
     var a = toRange(@[1,2,3])
     check $a.toOpenArray == "[1, 2, 3]"
+
+  test "MutRange[T] shallow test":
+    var b = @[1, 2, 3, 4, 5, 6]
+    var r1 = b.toRange()
+    var r2 = r1
+    b[0] = 5
+    b[1] = 10
+    b[2] = 15
+    var r3 = r1[1..1]
+    var a0 = cast[uint](addr b[0])
+    var a1 = cast[uint](r1.gcHolder)
+    var a2 = cast[uint](r2.gcHolder)
+    var a3 = cast[uint](r3.gcHolder)
+    check:
+      a1 == a0
+      a2 == a0
+      a3 == a0
+
+  test "Range[T] shallow test":
+    var r1 = toRange(@[1, 2, 3, 4, 5, 6])
+    var r2 = r1
+    var r3 = r1[1..1]
+    var a1 = cast[uint](r1.gcHolder)
+    var a2 = cast[uint](r2.gcHolder)
+    var a3 = cast[uint](r3.gcHolder)
+    check:
+      a2 == a1
+      a3 == a1
 
   test "tryAdvance(Range)":
     var a: Range[int]
