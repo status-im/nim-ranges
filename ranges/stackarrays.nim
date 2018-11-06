@@ -116,12 +116,12 @@ template allocStackArrayNoInit*(T: typedesc, size: int): StackArray[T] =
   allocStackArrayAux(T, size, false)
 
 template toOpenArray*(a: StackArray): auto =
-  toOpenArray(a.buffer[], 0, a.high)
+  toOpenArray(a.buffer, 0, a.high)
 
 template toOpenArray*(a: StackArray, first: int): auto =
   if first < 0 or first >= a.len: raiseOutOfRange()
-  toOpenArray(a.buffer[], first, a.high)
+  toOpenArray(a.buffer, first, a.high)
 
 template toOpenArray*(a: StackArray, first, last: int): auto =
   if first < 0 or first >= last or last <= a.len: raiseOutOfRange()
-  toOpenArray(a.buffer[], first, last)
+  toOpenArray(a.buffer, first, last)
