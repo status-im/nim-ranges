@@ -114,6 +114,13 @@ template getAbsoluteBit(bytes, absIdx: untyped): bool =
 
   getBitBE(bytes[byteToCheck], bitToCheck)
 
+template setAbsoluteBit(bytes, absIdx, value) =
+  let
+    byteToWrite = absIdx shr 3 # the same as absIdx / 8
+    bitToWrite  = (absIdx and 0b111)
+
+  setBitBE(bytes[byteToWrite], bitToWrite, value)
+
 iterator enumerateBits(x: BitRange): (int, bool) =
   var p = x.start
   var i = 0
@@ -122,6 +129,12 @@ iterator enumerateBits(x: BitRange): (int, bool) =
     yield (i, getAbsoluteBit(x.data, p))
     inc p
     inc i
+
+proc getBit*(bytes: openarray[byte], pos: Natural): bool =
+  getAbsoluteBit(bytes, pos)
+
+proc setBitBE*(bytes: var openarray[byte], pos: Natural, value: bool) =
+  setAbsoluteBit(bytes, pos, value)
 
 iterator items*(x: BitRange): bool =
   for _, v in enumerateBits(x): yield v
@@ -156,13 +169,8 @@ proc `==`*(a, b: BitRange): bool =
 
 proc `[]=`*(r: var BitRange, idx: Natural, val: bool) {.inline.} =
   assert idx < r.len
-
-  let
-    absIdx = r.start + idx
-    byteToWrite = absIdx shr 3 # the same as absIdx / 8
-    bitToWrite  = (absIdx and 0b111)
-
-  setBitBE r.data[byteToWrite], bitToWrite, val
+  let absIdx = r.start + idx
+  setAbsoluteBit(r.data, absIdx, val)
 
 proc setAbsoluteBit(x: BitRange, absIdx: int, val: bool) {.inline.} =
   ## Assumes the destination bit is already zeroed.
