@@ -43,7 +43,7 @@ template mostSignificantBit(T: typedesc): auto =
   const res = 1 shl (sizeof(T) * 8 - 1)
   T(res)
 
-template getBitBE*(x: BitIndexable, bit: Natural): bool =
+template getBit*(x: BitIndexable, bit: Natural): bool =
   ## reads a bit from `x`, assuming 0 to be the position of the
   ## most significant bit
   (x and mostSignificantBit(x.type) shr bit) != 0
@@ -54,7 +54,7 @@ template getBitLE*(x: BitIndexable, bit: Natural): bool =
   type T = type(x)
   (x and T(0b1 shl bit)) != 0
 
-proc setBitBE*(x: var BitIndexable, bit: Natural, val: bool) =
+proc setBit*(x: var BitIndexable, bit: Natural, val: bool) =
   ## writes a bit in `x`, assuming 0 to be the position of the
   ## most significant bit
   let mask = mostSignificantBit(x.type) shr bit
@@ -73,14 +73,14 @@ proc setBitLE*(x: var BitIndexable, bit: Natural, val: bool) =
   else:
     x = x and not mask
 
-proc raiseBitBE*(x: var BitIndexable, bit: Natural) =
+proc raiseBit*(x: var BitIndexable, bit: Natural) =
   ## raises a bit in `x`, assuming 0 to be the position of the
   ## most significant bit
   type T = type(x)
   let mask = mostSignificantBit(x.type) shr bit
   x = x or mask
 
-proc lowerBitBE*(x: var BitIndexable, bit: Natural) =
+proc lowerBit*(x: var BitIndexable, bit: Natural) =
   ## raises a bit in `x`, assuming 0 to be the position of the
   ## most significant bit
   type T = type(x)
@@ -112,14 +112,14 @@ template getAbsoluteBit(bytes, absIdx: untyped): bool =
     byteToCheck = absIdx shr 3 # the same as absIdx / 8
     bitToCheck  = (absIdx and 0b111)
 
-  getBitBE(bytes[byteToCheck], bitToCheck)
+  getBit(bytes[byteToCheck], bitToCheck)
 
 template setAbsoluteBit(bytes, absIdx, value) =
   let
     byteToWrite = absIdx shr 3 # the same as absIdx / 8
     bitToWrite  = (absIdx and 0b111)
 
-  setBitBE(bytes[byteToWrite], bitToWrite, value)
+  setBit(bytes[byteToWrite], bitToWrite, value)
 
 iterator enumerateBits(x: BitRange): (int, bool) =
   var p = x.start
@@ -133,7 +133,7 @@ iterator enumerateBits(x: BitRange): (int, bool) =
 proc getBit*(bytes: openarray[byte], pos: Natural): bool =
   getAbsoluteBit(bytes, pos)
 
-proc setBitBE*(bytes: var openarray[byte], pos: Natural, value: bool) =
+proc setBit*(bytes: var openarray[byte], pos: Natural, value: bool) =
   setAbsoluteBit(bytes, pos, value)
 
 iterator items*(x: BitRange): bool =
@@ -181,7 +181,7 @@ proc setAbsoluteBit(x: BitRange, absIdx: int, val: bool) {.inline.} =
     bitToWrite  = (absIdx and 0b111)
 
   if val:
-    raiseBitBE x.data[byteToWrite], bitToWrite
+    raiseBit x.data[byteToWrite], bitToWrite
 
 proc pushFront*(x: var BitRange, val: bool) =
   assert x.start > 0
@@ -224,7 +224,7 @@ proc parse*(T: typedesc[BitRange], s: string): BitRange =
   for i, c in s:
     case c
     of '0': discard
-    of '1': raiseBitBE(bytes[i shr 3], i and 0b111)
+    of '1': raiseBit(bytes[i shr 3], i and 0b111)
     else: assert false
   result = bits(bytes, 0, s.len)
 
