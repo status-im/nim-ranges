@@ -160,7 +160,11 @@ proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: openarray[T]) =
     raise newException(RangeError, "different lengths for slice assignment")
 
 template toOpenArray*[T](r: Range[T]): auto =
-  toOpenArray(cast[ptr UncheckedArray[T]](r.start), 0, r.high)
+  when (NimMajor,NimMinor,NimPatch)>=(0,19,9):
+    toOpenArray(cast[ptr UncheckedArray[T]](r.start), 0, r.high)
+  else:
+    # NOTE: `0` in `array[0, T]` is irrelevant
+    toOpenArray(cast[ptr array[0, T]](r.start)[], 0, r.high)
 
 proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: Range[T]) {.inline.} =
   r[s] = toOpenArray(v)

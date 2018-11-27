@@ -115,13 +115,19 @@ template allocStackArray*(T: typedesc, size: int): StackArray[T] =
 template allocStackArrayNoInit*(T: typedesc, size: int): StackArray[T] =
   allocStackArrayAux(T, size, false)
 
+template getBuffer*(a: StackArray): untyped =
+  when (NimMajor,NimMinor,NimPatch)>=(0,19,9):
+    a.buffer
+  else:
+    a.buffer[]
+
 template toOpenArray*(a: StackArray): auto =
-  toOpenArray(a.buffer, 0, a.high)
+  toOpenArray(a.getBuffer, 0, a.high)
 
 template toOpenArray*(a: StackArray, first: int): auto =
   if first < 0 or first >= a.len: raiseOutOfRange()
-  toOpenArray(a.buffer, first, a.high)
+  toOpenArray(a.getBuffer, first, a.high)
 
 template toOpenArray*(a: StackArray, first, last: int): auto =
   if first < 0 or first >= last or last <= a.len: raiseOutOfRange()
-  toOpenArray(a.buffer, first, last)
+  toOpenArray(a.getBuffer, first, last)
