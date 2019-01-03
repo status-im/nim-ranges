@@ -160,7 +160,10 @@ proc `[]=`*[T, U, V](r: MutRange[T], s: HSlice[U, V], v: openarray[T]) =
     raise newException(RangeError, "different lengths for slice assignment")
 
 template toOpenArray*[T](r: Range[T]): auto =
-  when (NimMajor,NimMinor,NimPatch)>=(0,19,9):
+  when false:
+  # when (NimMajor,NimMinor,NimPatch)>=(0,19,9):
+    # error message in Nim HEAD 2019-01-02:
+    # "for a 'var' type a variable needs to be passed, but 'toOpenArray(cast[ptr UncheckedArray[T]](curHash.start), 0, high(curHash))' is immutable"
     toOpenArray(cast[ptr UncheckedArray[T]](r.start), 0, r.high)
   else:
     # NOTE: `0` in `array[0, T]` is irrelevant
