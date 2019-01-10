@@ -14,6 +14,7 @@ proc configForTests() =
   --debuginfo
   --path: "."
   --run
+  --threads: on
 
 task test, "run CPU tests":
   configForTests()
