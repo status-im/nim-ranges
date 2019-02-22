@@ -45,7 +45,7 @@ suite "bit ranges":
     check $asciiBits == "0100000101010011010000110100100101001001"
 
   test "concat operator":
-    randomize(0)
+    randomize(5000)
 
     for i in 0..<256:
       var xSeq = randomBytes(rand(i))
