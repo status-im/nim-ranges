@@ -1,6 +1,6 @@
 import
   unittest, sets,
-  ../ranges/typedranges
+  ../ranges/[typedranges, ptr_arith]
 
 suite "Typed ranges":
   test "basic stuff":
@@ -237,3 +237,12 @@ suite "Typed ranges":
       $b.toOpenArray == "[]"
       b.aecheck(1) == 2
       $b.toOpenArray == "[]"
+
+  test "span API":
+    var str = "test 1,2,3"
+    var strPtr: pointer = addr str[5]
+    check:
+      (strPtr.makeOpenArray(char, 4).len == 4)
+      (strPtr.makeOpenArray(char, 5) == "1,2,3")
+      (strPtr.makeOpenArray(char, 5) == str[5..9])
+
