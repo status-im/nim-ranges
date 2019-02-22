@@ -238,11 +238,17 @@ suite "Typed ranges":
       b.aecheck(1) == 2
       $b.toOpenArray == "[]"
 
-  test "span API":
+  test "make openarrays from pointers":
     var str = "test 1,2,3"
-    var strPtr: pointer = addr str[5]
+    var charPtr: ptr char = addr str[7]
+    var regularPtr: pointer = addr str[5]
+
     check:
-      (strPtr.makeOpenArray(char, 4).len == 4)
-      (strPtr.makeOpenArray(char, 5) == "1,2,3")
-      (strPtr.makeOpenArray(char, 5) == str[5..9])
+      (regularPtr.makeOpenArray(char, 4).len == 4)
+      (regularPtr.makeOpenArray(char, 5) == "1,2,3")
+      (regularPtr.makeOpenArray(char, 5) == str[5..9])
+
+      (charPtr.makeOpenArray(3).len == 3)
+      (charPtr.makeOpenArray(3) == "2,3")
+      (charPtr.makeOpenArray(1) == str[7..7])
 

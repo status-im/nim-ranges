@@ -10,11 +10,20 @@ proc shift*[T](p: ptr T, delta: int): ptr T {.inline.} =
   cast[ptr T](shift(cast[pointer](p), delta * sizeof(T)))
 
 when (NimMajor,NimMinor,NimPatch) >= (0,19,9):
+  template makeOpenArray*[T](p: ptr T, len: int): auto =
+    toOpenArray(cast[ptr UncheckedArray[T]](p), 0, len - 1)
+
   template makeOpenArray*(p: pointer, T: type, len: int): auto =
     toOpenArray(cast[ptr UncheckedArray[T]](p), 0, len - 1)
+
 else:
+  # TODO: These are fallbacks until we upgrade to 0.19.9
   template makeOpenArray*(p: pointer, T: type, len: int): auto =
-    # TODO: This is a fallback until we upgrade to 0.19.9
+    var s = newSeq[T](len)
+    copyMem(addr s[0], p, len * sizeof(T))
+    s
+
+  template makeOpenArray*[T](p: ptr T, len: int): auto =
     var s = newSeq[T](len)
     copyMem(addr s[0], p, len * sizeof(T))
     s
