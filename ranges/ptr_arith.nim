@@ -19,12 +19,8 @@ when (NimMajor,NimMinor,NimPatch) >= (0,19,9):
 else:
   # TODO: These are fallbacks until we upgrade to 0.19.9
   template makeOpenArray*(p: pointer, T: type, len: int): auto =
-    var s = newSeq[T](len)
-    copyMem(addr s[0], p, len * sizeof(T))
-    s
+    toOpenArray(cast[ptr array[0, T]](p)[], 0, len - 1)
 
   template makeOpenArray*[T](p: ptr T, len: int): auto =
-    var s = newSeq[T](len)
-    copyMem(addr s[0], p, len * sizeof(T))
-    s
+    toOpenArray(cast[ptr array[0, T]](p)[], 0, len - 1)
 

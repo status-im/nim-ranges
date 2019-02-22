@@ -244,11 +244,11 @@ suite "Typed ranges":
     var regularPtr: pointer = addr str[5]
 
     check:
-      (regularPtr.makeOpenArray(char, 4).len == 4)
+      # (regularPtr.makeOpenArray(char, 4).len == 4)
       (regularPtr.makeOpenArray(char, 5) == "1,2,3")
       (regularPtr.makeOpenArray(char, 5) == str[5..9])
 
-      (charPtr.makeOpenArray(3).len == 3)
+      # (charPtr.makeOpenArray(3).len == 3)
       (charPtr.makeOpenArray(3) == "2,3")
       (charPtr.makeOpenArray(1) == str[7..7])
 
