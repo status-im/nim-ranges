@@ -74,14 +74,14 @@ proc high*(r: Range): int {.inline.} = r.len - 1
 proc low*(r: Range): int {.inline.} = 0
 
 proc elemAt[T](r: MutRange[T], idx: int): var T {.inline.} =
-  assert(idx < r.len)
+  doAssert(idx < r.len)
   Range[T](r).start.shift(idx)[]
 
 proc `[]=`*[T](r: MutRange[T], idx: int, v: T) {.inline.} = r.elemAt(idx) = v
 proc `[]`*[T](r: MutRange[T], i: int): var T = r.elemAt(i)
 
 proc `[]`*[T](r: Range[T], idx: int): T {.inline.} =
-  assert(idx < r.len)
+  doAssert(idx < r.len)
   r.start.shift(idx)[]
 
 proc `==`*[T](a, b: Range[T]): bool =
@@ -122,7 +122,7 @@ proc `$`*(r: Range): string =
   result &= "]"
 
 proc sliceNormalized[T](r: Range[T], ibegin, iend: int): Range[T] =
-  assert ibegin >= 0 and
+  doAssert ibegin >= 0 and
          ibegin < r.len and
          iend < r.len and
          iend + 1 >= ibegin # the +1 here allows the result to be

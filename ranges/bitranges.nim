@@ -13,8 +13,8 @@ template `@`(s, idx: untyped): untyped =
   (when idx is BackwardsIndex: s.len - int(idx) else: int(idx))
 
 proc bits*(a: MutByteRange, start, len: int): BitRange =
-  assert start <= len
-  assert len <= 8 * a.len
+  doAssert start <= len
+  doAssert len <= 8 * a.len
   result.data = a
   result.start = start
   result.mLen = len
@@ -143,12 +143,12 @@ iterator pairs*(x: BitRange): (int, bool) =
   for i, v in enumerateBits(x): yield (i, v)
 
 proc `[]`*(x: BitRange, idx: int): bool {.inline.} =
-  assert idx < x.len
+  doAssert idx < x.len
   let p = x.start + idx
   result = getAbsoluteBit(x.data, p)
 
 proc sliceNormalized(x: BitRange, ibegin, iend: int): BitRange =
-  assert ibegin >= 0 and
+  doAssert ibegin >= 0 and
          ibegin < x.len and
          iend < x.len and
          iend + 1 >= ibegin # the +1 here allows the result to be
@@ -168,14 +168,14 @@ proc `==`*(a, b: BitRange): bool =
   true
 
 proc `[]=`*(r: var BitRange, idx: Natural, val: bool) {.inline.} =
-  assert idx < r.len
+  doAssert idx < r.len
   let absIdx = r.start + idx
   setAbsoluteBit(r.data, absIdx, val)
 
 proc setAbsoluteBit(x: BitRange, absIdx: int, val: bool) {.inline.} =
   ## Assumes the destination bit is already zeroed.
   ## Works with absolute positions similar to `getAbsoluteBit`
-  assert absIdx < x.len
+  doAssert absIdx < x.len
   let
     byteToWrite = absIdx shr 3 # the same as absIdx / 8
     bitToWrite  = (absIdx and 0b111)
@@ -184,7 +184,7 @@ proc setAbsoluteBit(x: BitRange, absIdx: int, val: bool) {.inline.} =
     raiseBit x.data[byteToWrite], bitToWrite
 
 proc pushFront*(x: var BitRange, val: bool) =
-  assert x.start > 0
+  doAssert x.start > 0
   dec x.start
   x[0] = val
   inc x.mLen
@@ -193,9 +193,9 @@ template neededBytes(nBits: int): int =
   (nBits shr 3) + ord((nBits and 0b111) != 0)
 
 static:
-  assert neededBytes(2) == 1
-  assert neededBytes(8) == 1
-  assert neededBytes(9) == 2
+  doAssert neededBytes(2) == 1
+  doAssert neededBytes(8) == 1
+  doAssert neededBytes(9) == 2
 
 proc `&`*(a, b: BitRange): BitRange =
   let totalLen = a.len + b.len
@@ -212,7 +212,7 @@ proc `$`*(r: BitRange): string =
     result.add(if b: '1' else: '0')
 
 proc fromBits*(T: typedesc, r: BitRange, offset, num: Natural): T =
-  assert(num <= sizeof(T) * 8)
+  doAssert(num <= sizeof(T) * 8)
   # XXX: Nim has a bug that a typedesc parameter cannot be used
   # in a type coercion, so we must define an alias here:
   type TT = T
@@ -225,6 +225,6 @@ proc parse*(T: typedesc[BitRange], s: string): BitRange =
     case c
     of '0': discard
     of '1': raiseBit(bytes[i shr 3], i and 0b111)
-    else: assert false
+    else: doAssert false
   result = bits(bytes, 0, s.len)
 

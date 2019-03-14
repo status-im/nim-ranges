@@ -19,7 +19,7 @@ proc toMemRange*(x: string): MemRange =
   result.size = x.len
 
 proc toMemRange*[T](x: openarray[T], fromIdx, toIdx: int): MemRange =
-  assert(fromIdx >= 0 and toIdx >= fromIdx and fromIdx < x.len and toIdx < x.len)
+  doAssert(fromIdx >= 0 and toIdx >= fromIdx and fromIdx < x.len and toIdx < x.len)
   result.start = unsafeAddr x[fromIdx]
   result.size = (toIdx - fromIdx + 1) * T.sizeof
 
